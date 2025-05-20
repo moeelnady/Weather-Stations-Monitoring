@@ -28,6 +28,10 @@ public class CentralBaseStation {
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
         consumer.subscribe(List.of(topic));
+
+        /*Note for testing, run only for two mins*/
+        long startTime = System.currentTimeMillis(); // Record start time
+        long duration = 6000*10*2;
         try{
             while (true) {
                 ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
@@ -39,19 +43,43 @@ public class CentralBaseStation {
                         byte[] valueBytes = json.getBytes(); // Store full raw JSON
                         bitcask.put(key, valueBytes);
                         System.out.println("Saved station " + key + " to BitCask");
+                        //TODO: Write records in parquet
                     } catch (Exception e) {
                         System.err.println("Failed to process message: " + e.getMessage());
                     }
                 }
+
+                if (System.currentTimeMillis() - startTime > duration) {
+                    System.out.println("Time's up! Exiting loop.");
+                break;
+                }
+
             }
+            readAndPrintAllIndex(bitcask);
 
         } finally {
             consumer.close();
         }
-        //TODO: Write records in parquet
 
 
+    }
+    public void readAndPrintAllIndex(BitcaskEngine bitcask) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
 
+        for (Integer key : bitcask.getAllKeys()) {
+            String json = bitcask.get(key); // Already returns JSON as string
+            if (json != null) {
+                CentralStationReading reading = mapper.readValue(json, CentralStationReading.class);
+                System.out.println("Station ID: " + reading.station_id);
+                System.out.println("  Serial No: " + reading.s_no);
+                System.out.println("  Battery: " + reading.battery_status);
+                System.out.println("  Timestamp: " + reading.status_timestamp);
+                System.out.println("  Weather -> Humidity: " + reading.weather.humidity +
+                        ", Temp: " + reading.weather.temperature +
+                        ", Wind: " + reading.weather.wind_speed);
+                System.out.println("============================================");
+            }
+        }
     }
 
 }

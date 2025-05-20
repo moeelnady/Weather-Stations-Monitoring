@@ -8,6 +8,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="weather-station" />
         <module name="kafka-processor" />
+        <module name="central-station" />
       </profile>
     </annotationProcessing>
   </component>

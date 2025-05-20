@@ -2,9 +2,9 @@ package org.example;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class FileHandler {
     public void writeEntry(RandomAccessFile file, BitcaskEntry entry) throws IOException {
@@ -22,11 +22,35 @@ public class FileHandler {
         file.readFully(data);
         return new BitcaskEntry(key, data,timestamp);
     }
+    public void writeHintFile(String path, Map<Integer, FileOffset> index) throws IOException {
+        try (DataOutputStream out = new DataOutputStream(new FileOutputStream(path))) {
+            for (Map.Entry<Integer, FileOffset> entry : index.entrySet()) {
+                out.writeInt(entry.getKey());
+                out.writeLong(entry.getValue().getFileId());
+                out.writeLong(entry.getValue().getOffsetVal());
+                out.writeLong(entry.getValue().getTimestamp());
+            }
+        }
+    }
+
+    public Map<Integer, FileOffset> readHintFile(String path) throws IOException {
+        Map<Integer, FileOffset> index = new HashMap<>();
+        try (DataInputStream in = new DataInputStream(new FileInputStream(path))) {
+            while (in.available() > 0) {
+                int key = in.readInt();
+                long fileId = in.readLong();
+                long offset = in.readLong();
+                long timestamp = in.readLong();
+                index.put(key, new FileOffset(fileId, offset, timestamp));
+            }
+        }
+        return index;
+    }
     public void readFileById(int fileId) throws IOException {
-        String filePath = "bitcask-data"+ "/segment_" + fileId + ".data";
+        String filePath = "bitcask-data"+"/segment_"+fileId+".data";
         File file = new File(filePath);
         if (!file.exists()) {
-            System.out.println("File not found: " + filePath);
+            System.out.println("File not found: "+filePath);
             return;
         }
 
@@ -53,4 +77,5 @@ public class FileHandler {
             }
         }
     }
+
 }

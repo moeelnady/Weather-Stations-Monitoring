@@ -4,11 +4,13 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class FileOffset {
     private final long fileId;
-    private final long offsetVal;
+    private final long offset;
+    private final long timestamp;
 
-    public FileOffset(long fileId, long offsetVal) {
+    public FileOffset(long fileId, long offset, long timestamp) {
         this.fileId = fileId;
-        this.offsetVal = offsetVal;
+        this.offset = offset;
+        this.timestamp = timestamp;
     }
 
     public long getFileId() {
@@ -16,7 +18,10 @@ public class FileOffset {
     }
 
     public long getOffsetVal() {
-        return offsetVal;
+        return offset;
     }
 
+    public long getTimestamp() {
+        return timestamp;
+    }
 }
