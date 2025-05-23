@@ -28,7 +28,7 @@ public class DataEntryWriter implements Closeable {
     public ValueLocation write(DataEntry entry) throws IOException {
         if (activeFile == null || activeFile.length() >= MAX_FILE_SIZE)
             openNewDataFile();
-        long offset = activeFile.length();
+        long offset = activeFile.getFilePointer();
         entry.write(activeFile);
         return new ValueLocation(activeFileId, offset, entry);
     }
