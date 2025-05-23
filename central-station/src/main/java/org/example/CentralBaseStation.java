@@ -17,7 +17,7 @@ public class CentralBaseStation {
     public void consumeMessages() throws Exception {
         // TODO: write to bitcaskfile
         String topic = "raining-readings";
-        BitcaskEngine bitcask = new BitcaskEngine();
+        // BitcaskEngine bitcask = new BitcaskEngine();
         ObjectMapper mapper = new ObjectMapper();
 
         Properties props = new Properties();
@@ -37,7 +37,7 @@ public class CentralBaseStation {
                         CentralStationReading reading = mapper.readValue(json, CentralStationReading.class);
                         int key = reading.station_id;
                         byte[] valueBytes = json.getBytes(); // Store full raw JSON
-                        bitcask.put(key, valueBytes);
+                        // bitcask.put(key, valueBytes);
                         System.out.println("Saved station " + key + " to BitCask");
                     } catch (Exception e) {
                         System.err.println("Failed to process message: " + e.getMessage());
