@@ -82,6 +82,7 @@ public class Bitcask {
             }
         }
         resolver.finishRead(dataFileId);
+        resolver.markToBeDeleted(dataFileId);
     }
 
     public void constructKeydir() throws IOException {
@@ -108,9 +109,6 @@ public class Bitcask {
             for (Long dataFileId : oldFilesIds) {
                 compactDataFile(dataFileId, compactFileWriter);
             }
-        }
-        for (Long oldFileId : oldFilesIds) {
-            resolver.markToBeDeleted(oldFileId);
         }
     }
 
