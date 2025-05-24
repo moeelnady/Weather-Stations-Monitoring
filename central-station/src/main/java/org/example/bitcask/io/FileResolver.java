@@ -51,6 +51,7 @@ public class FileResolver {
 
     public synchronized File startRead(long fileId) {
         File file = getDataFile(fileId);
+        if (!file.exists()) return null;
         int count = readersCounter.getOrDefault(fileId, 0);
         readersCounter.put(fileId, count + 1);
         return file;

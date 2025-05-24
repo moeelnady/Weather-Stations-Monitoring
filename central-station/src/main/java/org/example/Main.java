@@ -2,6 +2,8 @@ package org.example;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Random;
+
 import org.example.bitcask.Bitcask;
 
 public class Main {
@@ -35,7 +37,6 @@ public class Main {
                     e.printStackTrace();
                     System.out.println(e.getMessage());
                 } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
@@ -49,7 +50,22 @@ public class Main {
                     e.printStackTrace();
                     System.out.println(e.getMessage());
                 } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        });
+        Thread writer = new Thread(() -> {
+            while (true) {
+                try {
+                    byte[] test = new byte[1000];
+                    Random r = new Random();
+                    r.nextBytes(test);
+                    x.put(Integer.toString(r.nextInt(1, 4)), test);
+                    Thread.sleep(1000);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    System.out.println(e.getMessage());
+                } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
@@ -66,6 +82,7 @@ public class Main {
         reader1.start();
         reader2.start();
         reader3.start();
+        writer.start();
         compacter.start();
     }
 }

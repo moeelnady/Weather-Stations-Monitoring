@@ -6,6 +6,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.example.bitcask.Bitcask;
 
 import java.time.Duration;
 import java.util.List;
@@ -15,9 +16,9 @@ import java.util.Properties;
 public class CentralBaseStation {
 
     public void consumeMessages() throws Exception {
-        // TODO: write to bitcaskfile
         String topic = "raining-readings";
-        // BitcaskEngine bitcask = new BitcaskEngine();
+        Bitcask bitcask = new Bitcask("./bitcask-data/");
+        bitcask.scheduleCompaction();
         ObjectMapper mapper = new ObjectMapper();
 
         Properties props = new Properties();
@@ -35,9 +36,9 @@ public class CentralBaseStation {
                     String json = record.value();
                     try {
                         CentralStationReading reading = mapper.readValue(json, CentralStationReading.class);
-                        int key = reading.station_id;
+                        String key = Integer.toString(reading.station_id);
                         byte[] valueBytes = json.getBytes(); // Store full raw JSON
-                        // bitcask.put(key, valueBytes);
+                        bitcask.put(key, valueBytes);
                         System.out.println("Saved station " + key + " to BitCask");
                     } catch (Exception e) {
                         System.err.println("Failed to process message: " + e.getMessage());

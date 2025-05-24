@@ -19,10 +19,21 @@ public class DataEntryWriter implements Closeable {
     }
 
     public void openNewDataFile() throws IOException {
-        if (activeFile != null) activeFile.close();
-        activeFileId = System.currentTimeMillis();
-        File file = resolver.getDataFile(activeFileId);
-        activeFile = new RandomAccessFile(file, "rw");
+        synchronized (DataEntryWriter.class) {
+            if (activeFile != null) activeFile.close();
+            activeFileId = System.currentTimeMillis();
+            File file = resolver.getDataFile(activeFileId);
+            while (file.exists()) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                activeFileId = System.currentTimeMillis();
+                file = resolver.getDataFile(activeFileId);
+            }
+            activeFile = new RandomAccessFile(file, "rw");
+        }
     }
 
     public ValueLocation write(DataEntry entry) throws IOException {
