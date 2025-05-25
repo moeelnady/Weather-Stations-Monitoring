@@ -30,7 +30,7 @@ public class CentralBaseStation {
         BitcaskServer server = null;
         Thread serverThread = null;
         try {
-            server = new BitcaskServer(bitcask, 1099);
+            server = new BitcaskServer(bitcask, 1022);
             serverThread = new Thread(server::start);
             serverThread.start();
         } catch (Exception e) {
