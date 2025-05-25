@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
@@ -109,7 +110,7 @@ public class Bitcask {
         List<Long> fileIds = Files.list(resolver.getDirectory())
                                   .filter(FileResolver::isDataFile)
                                   .map(FileResolver::toFileId)
-                                  .toList();
+                                  .collect(Collectors.toList());
         for (Long fileId : fileIds) {
             if (resolver.getHintFile(fileId).exists())
                 processHintFile(fileId);
@@ -123,7 +124,7 @@ public class Bitcask {
                                       .filter(FileResolver::isDataFile)
                                       .map(FileResolver::toFileId)
                                       .filter((id) -> id != writer.getActiveFileId())
-                                      .toList();
+                                      .collect(Collectors.toList());
         if (oldFilesIds.size() < MINIMUM_NUMBER_OF_FILES) return;
         DataEntryWriterPlus compactFileWriter = new DataEntryWriterPlus(new DataEntryWriter(resolver));
         try (compactFileWriter) {

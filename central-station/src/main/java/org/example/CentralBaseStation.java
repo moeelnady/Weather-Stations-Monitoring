@@ -10,14 +10,20 @@ import org.example.bitcask.Bitcask;
 import org.example.bitcask.net.BitcaskServer;
 
 import java.time.Duration;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-
 public class CentralBaseStation {
+    private static final int BATCH_SIZE = 100;
+    private final List<String> buffer = new ArrayList<>();
+    private final Object lock = new Object();
+    parquetEngine parquetEng = new parquetEngine("./parquet-data/");
+    ParquetToElasticSearch parquetToElasticSearch = new ParquetToElasticSearch();
 
     public void consumeMessages() throws Exception {
-        String topic = "raining-readings";
+        String topic = "weather-readings";
         Bitcask bitcask = new Bitcask("./bitcask-data/");
         bitcask.scheduleCompaction();
 
@@ -42,7 +48,7 @@ public class CentralBaseStation {
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
         consumer.subscribe(List.of(topic));
-        try{
+        try {
             while (true) {
                 ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
                 for (ConsumerRecord<String, String> record : records) {
@@ -56,6 +62,19 @@ public class CentralBaseStation {
                     } catch (Exception e) {
                         System.err.println("Failed to process message: " + e.getMessage());
                     }
+                    try {
+                        synchronized (lock) {
+                            buffer.add(json);
+                            if (buffer.size() >= BATCH_SIZE) {
+                                System.out.println("start parquet");
+                                parquetEng.writeBatch(buffer);
+                                parquetToElasticSearch.parquetToJson();
+                                buffer.clear();
+                            }
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Failed to process message: " + e.getMessage());
+                    }
                 }
             }
 
@@ -64,5 +83,4 @@ public class CentralBaseStation {
             if (server != null) server.close();
         }
     }
-
 }

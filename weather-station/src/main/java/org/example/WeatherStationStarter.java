@@ -8,9 +8,9 @@ import org.example.data.WeatherStatus;
 import java.util.Random;
 
 public class WeatherStationStarter {
-    private static final Random random = new Random();
-    private static final ObjectMapper mapper = new ObjectMapper();
-    private static long sequenceNumber = 1;
+    private final Random random = new Random();  // Instance-specific random
+    private static final ObjectMapper mapper = new ObjectMapper();  // Shared thread-safe mapper
+    private long sequenceNumber = 1;  // Instance-specific sequence
     private final long stationId;
 
     public WeatherStationStarter(long station_id){
@@ -20,6 +20,7 @@ public class WeatherStationStarter {
         return () -> {
             if (random.nextDouble() < 0.1) {
                 System.out.println("Message dropped");
+                sequenceNumber++;
                 return;
             }
 
