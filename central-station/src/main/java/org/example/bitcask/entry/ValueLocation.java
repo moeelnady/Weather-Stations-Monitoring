@@ -11,7 +11,7 @@ public class ValueLocation implements Comparable<ValueLocation>{
 
     public ValueLocation(long fileId, long offset, DataEntry dataEntry) {
         this.valueSize = dataEntry.getValueSize();
-        this.valuePosition = offset + dataEntry.getEntrySize() - dataEntry.getValueSize();
+        this.valuePosition = offset + dataEntry.getValuePositionInEntry();
         this.timestamp = dataEntry.getTimestamp();
         this.fileId = fileId;
     }
@@ -89,6 +89,12 @@ public class ValueLocation implements Comparable<ValueLocation>{
         if (timestamp != other.timestamp) return false;
         if (fileId != other.fileId) return false;
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "ValueLocation [valueSize=" + valueSize + ", valuePosition=" + valuePosition + ", timestamp=" + timestamp
+                + ", fileId=" + fileId + "]";
     }
 
 }

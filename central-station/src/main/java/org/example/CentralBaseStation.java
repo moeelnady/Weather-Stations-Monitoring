@@ -6,6 +6,8 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.example.bitcask.Bitcask;
+import org.example.bitcask.net.BitcaskServer;
 
 import java.time.Duration;
 import java.util.List;
@@ -15,9 +17,21 @@ import java.util.Properties;
 public class CentralBaseStation {
 
     public void consumeMessages() throws Exception {
-        // TODO: write to bitcaskfile
         String topic = "raining-readings";
-        // BitcaskEngine bitcask = new BitcaskEngine();
+        Bitcask bitcask = new Bitcask("./bitcask-data/");
+        bitcask.scheduleCompaction();
+
+        BitcaskServer server = null;
+        Thread serverThread = null;
+        try {
+            server = new BitcaskServer(bitcask, 1099);
+            serverThread = new Thread(server::start);
+            serverThread.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("failed to start the server");
+        }
+
         ObjectMapper mapper = new ObjectMapper();
 
         Properties props = new Properties();
@@ -35,9 +49,9 @@ public class CentralBaseStation {
                     String json = record.value();
                     try {
                         CentralStationReading reading = mapper.readValue(json, CentralStationReading.class);
-                        int key = reading.station_id;
+                        String key = Integer.toString(reading.station_id);
                         byte[] valueBytes = json.getBytes(); // Store full raw JSON
-                        // bitcask.put(key, valueBytes);
+                        bitcask.put(key, valueBytes);
                         System.out.println("Saved station " + key + " to BitCask");
                     } catch (Exception e) {
                         System.err.println("Failed to process message: " + e.getMessage());
@@ -47,11 +61,8 @@ public class CentralBaseStation {
 
         } finally {
             consumer.close();
+            if (server != null) server.close();
         }
-        //TODO: Write records in parquet
-
-
-
     }
 
 }

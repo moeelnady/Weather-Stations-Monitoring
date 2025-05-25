@@ -48,6 +48,10 @@ public class DataEntry {
         return Long.BYTES + Integer.BYTES * 2 + key.getBytes().length + value.length;
     }
 
+    public long getValuePositionInEntry() {
+        return Long.BYTES + Integer.BYTES * 2 + key.getBytes().length;
+    }
+
     public int getValueSize() {
         return value.length;
     }

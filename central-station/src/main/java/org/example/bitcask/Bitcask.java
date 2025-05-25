@@ -5,11 +5,18 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import org.example.bitcask.entry.DataEntry;
 import org.example.bitcask.entry.HintEntry;
 import org.example.bitcask.entry.ValueLocation;
@@ -21,8 +28,21 @@ public class Bitcask {
     private final FileResolver resolver;
     private final DataEntryWriter writer;
     private final ConcurrentMap<String, ValueLocation> keydir;
+    private final static long MINIMUM_NUMBER_OF_FILES = 10;
+    private final static long INITIAL_COMPACTION_DELAY = 60;
+    private final static long COMPACTION_PERIOD = 60;
+
+    public Bitcask(String directory) throws IOException {
+        this(Path.of(directory));
+    }
 
     public Bitcask(Path directory) throws IOException {
+        try {
+            Files.createDirectories(directory);
+        } catch (FileAlreadyExistsException e) {
+            System.out.println("path is not a directory.");
+            System.exit(-1);
+        }
         this.resolver = new FileResolver(directory);
         this.writer = new DataEntryWriter(resolver);
         this.keydir = new ConcurrentHashMap<>();
@@ -64,7 +84,8 @@ public class Bitcask {
     }
 
     public void compactDataFile(long dataFileId, DataEntryWriterPlus compactFileWriter) throws IOException {
-        File dataFile = resolver.getDataFile(dataFileId);
+        File dataFile = resolver.startRead(dataFileId);
+        if (dataFile == null) return;
         FileInputStream fileInputStream = new FileInputStream(dataFile);
         DataInputStream inputStream = new DataInputStream(fileInputStream);
         DataEntry entry = new DataEntry();
@@ -80,8 +101,8 @@ public class Bitcask {
                 keydir.replace(entry.getKey(), dataFileLocation, compactFileLocation);
             }
         }
-        dataFile.delete();
-        resolver.getHintFile(dataFileId).delete();
+        resolver.finishRead(dataFileId);
+        resolver.markToBeDeleted(dataFileId);
     }
 
     public void constructKeydir() throws IOException {
@@ -103,11 +124,26 @@ public class Bitcask {
                                       .map(FileResolver::toFileId)
                                       .filter((id) -> id != writer.getActiveFileId())
                                       .toList();
+        if (oldFilesIds.size() < MINIMUM_NUMBER_OF_FILES) return;
         DataEntryWriterPlus compactFileWriter = new DataEntryWriterPlus(new DataEntryWriter(resolver));
-        for (Long dataFileId : oldFilesIds) {
-            compactDataFile(dataFileId, compactFileWriter);
+        try (compactFileWriter) {
+            for (Long dataFileId : oldFilesIds) {
+                compactDataFile(dataFileId, compactFileWriter);
+            }
         }
-        compactFileWriter.close();
+    }
+
+    public ScheduledExecutorService scheduleCompaction() {
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        Runnable runnable = () -> {
+            try {
+                compact();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        };
+        scheduler.scheduleWithFixedDelay(runnable, INITIAL_COMPACTION_DELAY, COMPACTION_PERIOD, TimeUnit.SECONDS);
+        return scheduler;
     }
 
     public synchronized void put(String key, byte[] value) throws IOException {
@@ -115,20 +151,33 @@ public class Bitcask {
         keydir.put(key, writer.write(entry));
     }
 
-    public RandomAccessFile valueLocationToFile(ValueLocation valueLocation) throws IOException {
-        File file = resolver.getDataFile(valueLocation.getFileId());
-        RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r");
-        randomAccessFile.seek(valueLocation.getValuePosition());
-        return randomAccessFile;
-    }
-
     public byte[] get(String key) throws IOException {
-        ValueLocation location = keydir.get(key);
-        if (location == null) return null;
-        RandomAccessFile randomAccessFile = valueLocationToFile(location);
+        ValueLocation location = null;
+        File file = null;
+        synchronized (resolver) {
+            location = keydir.get(key);
+            if (location == null) return null;
+            file = resolver.startRead(location.getFileId());
+        }
+        RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r");
+        randomAccessFile.seek(location.getValuePosition());
         byte[] bytes = new byte[location.getValueSize()];
         randomAccessFile.readFully(bytes);
         randomAccessFile.close();
+        resolver.finishRead(location.getFileId());
         return bytes;
+    }
+
+    public Map<String, byte[]> getAll() throws IOException {
+        Map<String, byte[]> result = new HashMap<>();
+        for (String key : keydir.keySet()) {
+            result.put(key, get(key));
+        }
+        return result;
+    }
+
+    public byte[] getOrDefault(String key, byte[] defaultValue) throws IOException {
+        byte[] result = get(key);
+        return result == null ? defaultValue : result;
     }
 }

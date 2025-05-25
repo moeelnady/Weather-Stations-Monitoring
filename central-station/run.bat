@@ -1,2 +1,2 @@
 @echo off
-mvn exec:java -Dexec.mainClass="org.example.Main"
+mvn package && java -cp ./target/central-station-1.0-SNAPSHOT.jar org.example.Main
