@@ -8,7 +8,9 @@ import java.io.RandomAccessFile;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
@@ -164,6 +166,14 @@ public class Bitcask {
         randomAccessFile.close();
         resolver.finishRead(location.getFileId());
         return bytes;
+    }
+
+    public Map<String, byte[]> getAll() throws IOException {
+        Map<String, byte[]> result = new HashMap<>();
+        for (String key : keydir.keySet()) {
+            result.put(key, get(key));
+        }
+        return result;
     }
 
     public byte[] getOrDefault(String key, byte[] defaultValue) throws IOException {
