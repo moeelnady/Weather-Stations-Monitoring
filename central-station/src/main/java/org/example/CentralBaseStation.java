@@ -22,9 +22,10 @@ public class CentralBaseStation {
         bitcask.scheduleCompaction();
 
         BitcaskServer server = null;
+        Thread serverThread = null;
         try {
             server = new BitcaskServer(bitcask, 1099);
-            Thread serverThread = new Thread(server::start);
+            serverThread = new Thread(server::start);
             serverThread.start();
         } catch (Exception e) {
             e.printStackTrace();
