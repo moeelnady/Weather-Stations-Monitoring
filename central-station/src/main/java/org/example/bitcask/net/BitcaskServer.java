@@ -27,7 +27,7 @@ public class BitcaskServer implements Closeable {
                 threadpool.execute(new BitcaskClientHandler(bitcask, client));
             } catch(IOException e) {
                 e.printStackTrace();
-                System.out.print("server is down");
+                System.out.print("couldn't connect with the client");
             }
         }
     }

@@ -7,6 +7,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.example.bitcask.Bitcask;
+import org.example.bitcask.net.BitcaskServer;
 
 import java.time.Duration;
 import java.util.List;
@@ -19,6 +20,17 @@ public class CentralBaseStation {
         String topic = "raining-readings";
         Bitcask bitcask = new Bitcask("./bitcask-data/");
         bitcask.scheduleCompaction();
+
+        BitcaskServer server = null;
+        try {
+            server = new BitcaskServer(bitcask, 1099);
+            Thread serverThread = new Thread(server::start);
+            serverThread.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("failed to start the server");
+        }
+
         ObjectMapper mapper = new ObjectMapper();
 
         Properties props = new Properties();
@@ -48,11 +60,8 @@ public class CentralBaseStation {
 
         } finally {
             consumer.close();
+            if (server != null) server.close();
         }
-        //TODO: Write records in parquet
-
-
-
     }
 
 }
