@@ -1,0 +1,238 @@
+# Station 1
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-station-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: station
+  template:
+    metadata:
+      labels:
+        component: station
+    spec:
+      containers:
+        - name: weather-station-container
+          image: my-weather-station:latest  # Updated image name
+          imagePullPolicy: Never
+          env:
+            - name: stationId
+              value: "1"
+
+---
+# Station 2
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-station-2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: station
+  template:
+    metadata:
+      labels:
+        component: station
+    spec:
+      containers:
+        - name: weather-station-container
+          image: my-weather-station:latest  # Updated image name
+          imagePullPolicy: Never
+          env:
+            - name: stationId
+              value: "2"
+
+---
+# Station 3
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-station-3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: station
+  template:
+    metadata:
+      labels:
+        component: station
+    spec:
+      containers:
+        - name: weather-station-container
+          image: my-weather-station:latest  # Updated image name
+          imagePullPolicy: Never
+          env:
+            - name: stationId
+              value: "3"
+
+---
+# Station 4
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-station-4
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: station
+  template:
+    metadata:
+      labels:
+        component: station
+    spec:
+      containers:
+        - name: weather-station-container
+          image: my-weather-station:latest  # Updated image name
+          imagePullPolicy: Never
+          env:
+            - name: stationId
+              value: "4"
+
+---
+# Station 5
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-station-5
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: station
+  template:
+    metadata:
+      labels:
+        component: station
+    spec:
+      containers:
+        - name: weather-station-container
+          image: my-weather-station:latest  # Updated image name
+          imagePullPolicy: Never
+          env:
+            - name: stationId
+              value: "5"
+
+---
+# Station 6
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-station-6
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: station
+  template:
+    metadata:
+      labels:
+        component: station
+    spec:
+      containers:
+        - name: weather-station-container
+          image: my-weather-station:latest  # Updated image name
+          imagePullPolicy: Never
+          env:
+            - name: stationId
+              value: "6"
+
+---
+# Station 7
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-station-7
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: station
+  template:
+    metadata:
+      labels:
+        component: station
+    spec:
+      containers:
+        - name: weather-station-container
+          image: my-weather-station:latest  # Updated image name
+          imagePullPolicy: Never
+          env:
+            - name: stationId
+              value: "7"
+
+---
+# Station 8
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-station-8
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: station
+  template:
+    metadata:
+      labels:
+        component: station
+    spec:
+      containers:
+        - name: weather-station-container
+          image: my-weather-station:latest  # Updated image name
+          imagePullPolicy: Never
+          env:
+            - name: stationId
+              value: "8"
+
+---
+# Station 9
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-station-9
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: station
+  template:
+    metadata:
+      labels:
+        component: station
+    spec:
+      containers:
+        - name: weather-station-container
+          image: my-weather-station:latest  # Updated image name
+          imagePullPolicy: Never
+          env:
+            - name: stationId
+              value: "9"
+
+---
+# Station 10
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-station-10
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: station
+  template:
+    metadata:
+      labels:
+        component: station
+    spec:
+      containers:
+        - name: weather-station-container
+          image: my-weather-station:latest  # Updated image name
+          imagePullPolicy: Never
+          env:
+            - name: stationId
+              value: "10"

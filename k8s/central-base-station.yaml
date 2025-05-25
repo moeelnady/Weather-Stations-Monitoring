@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: central-base-station
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: central-base-station
+  template:
+    metadata:
+      labels:
+        app: central-base-station
+    spec:
+      containers:
+        - name: central-base-station
+          image: central-base-station:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: parquet-storage
+              mountPath: /app/parquet-data
+            - name: bitcask-storage
+              mountPath: /app/bitcask-data
+          env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka:9092"
+      volumes:
+        - name: parquet-storage
+          persistentVolumeClaim:
+            claimName: parquet-pvc
+        - name: bitcask-storage
+          persistentVolumeClaim:
+            claimName: bitcask-pvc
+
